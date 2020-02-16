@@ -1,4 +1,4 @@
-public class EthernetAnalyzer{
+public class EthernetAnalyzer implements NetworkPacket{
 
 	// Ethertypes:
 	//     0800 - IPv4
@@ -8,44 +8,43 @@ public class EthernetAnalyzer{
 
 	boolean valid = false;
 	String packet = "";
-	NetworkPacket netPack;
+	private String[] thisLayer;
+	NetworkPacket nextPack;
 	final String type = "eth";
 
 	public EthernetAnalyzer(String packet){
 		this.packet = packet;
 	}
 
-	String[] getInfo(){
+	public void getInfo(){
 		String destMAC = getAddress(getBytes(6));
 		String sourceMAC = getAddress(getBytes(6));
 		String etherType = getBytes(2);
-		String[] thisInfo = {sourceMAC, destMAC, etherType};
+		thisLayer = {sourceMAC, destMAC, etherType};
 		if (etherType.equals("0800")){ // IPv4
-			netPack = new IPAnalyzer(packet);
-			return thisInfo + netPack.getInfo();
+			nextPack = new IPAnalyzer(packet);
+			nextPack.getInfo();
 		} else if (etherType.equals("0806")){
-			netPack = new ARPAnalyzer(packet);
-			return thisInfo + netPack.getInfo();
-		} else {
-			return null;
+			nextPack = new ARPAnalyzer(packet);
+			nextPack.getInfo();
 		}
 	}
 
-	String getBytes(int amount){
+	private String getBytes(int amount){
 		String requested = packet.substring(0,(amount*2));
 		packet = packet.substring(amount*2);
 		return requested;
 	}
 
-	boolean isType(String filter){
+	public boolean isType(String filter){
 		if (filter.equals(type) || filter.equals("")){
 			return true;
 		} else {
-			return netPack.isType(filter);
+			return nextPack.isType(filter);
 		}
 	}
 
-	String getAddress(String mac){
+	private String getAddress(String mac){
 		String address = "";
 		for (int i = 0; i < mac.length(); i+=2){
 			if (i == 0){
@@ -57,17 +56,17 @@ public class EthernetAnalyzer{
 		return address;
 	}
 
-	String prettyPrint(String srcMac, String dstMac, String etherType){
-		if (etherType.equals("0800")){
-			etherType = "IPv4";
-		} else if(etherType.equals("0806")){
-			etherType = "ARP ";
+	public String prettyPrint(String[] allInfo, boolean onlyHeader){
+		if (allInfo[2].equals("0800")){
+			allInfo[2] = "IPv4";
+		} else if(allInfo[2].equals("0806")){
+			allInfo[2] = "ARP ";
 		}
 		String thisInfo = 
 		"+======================================================================================+\n" +
 		"|                                    Ethernet Header                                   |\n" +
 		"+======================================================================================+\n" +
-		"| Source MAC: " + srcMac + " | Destination MAC: " + dstMac + " | EtherType: " + etherType + " |\n" +
+		"| Source MAC: " + allInfo[0] + " | Destination MAC: " + allInfo[1] + " | EtherType: " + allInfo[2] + " |\n" +
 		"+-------------------------------+------------------------------------+-----------------+\n" +
 		"|          |          |          |          |          |          |          |         |\n" +
 		"v          v          v          v          v          v          v          v         v\n";

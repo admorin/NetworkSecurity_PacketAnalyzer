@@ -1,5 +1,5 @@
 public interface NetworkPacket{
 	boolean isType(String filter);
-	String[] getInfo();
+	void getInfo();
 	String prettyPrint(String[] allInfo, boolean onlyHeader);
 }

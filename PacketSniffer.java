@@ -56,14 +56,15 @@ public class PacketSniffer {
                 }
             }
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
-            String[] info = analyze.getInfo();
+            analyze.getInfo();
             if(info != null && analyze.isType(filter)){
+                String prettyInfo = analyze.prettyPrint(info, headers);
                 packetCount++;
                 if (outputFile.equals("")){
-                    System.out.println(info);
+                    System.out.println(prettyInfo);
                 } else {
                     try{
-                        wr.write(info);
+                        wr.write(prettyInfo);
                     } catch (IOException e){
                         System.out.println("ERROR: " + e);
                     }

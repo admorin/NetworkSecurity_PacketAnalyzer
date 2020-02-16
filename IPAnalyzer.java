@@ -6,13 +6,14 @@ public class IPAnalyzer implements NetworkPacket{
     // 0x01 = ICMP
 
     String packet = "";
+    private String[] thisLayer;
     final String type = "ip";
 
     public IPAnalyzer(String packet){
     	this.packet = packet;
     }
 
-	public String[] getInfo(){
+	public void getInfo(){
 		String versANDihl = getBytes(1);
 		String version = String.valueOf(versANDihl.charAt(0));
 		String ihl = String.valueOf(versANDihl.charAt(1));
@@ -33,9 +34,8 @@ public class IPAnalyzer implements NetworkPacket{
 		if (headerlen > 5){
 			options = getOptions(headerlen);
 		}
-		String[] allInfo = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
+		thisLayer = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
 		    srcIP, destIP, options};
-		return allInfo;
 	}
 
 	public String getBytes(int amount){

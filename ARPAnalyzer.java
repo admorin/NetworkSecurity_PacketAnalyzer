@@ -1,13 +1,14 @@
 public class ARPAnalyzer implements NetworkPacket{
 
 	String packet = "";
+	private String[] thisLayer;
 	final String type = "arp";
 
 	public ARPAnalyzer(String packet){
 		this.packet = packet;
 	}
 
-	public String[] getInfo(){
+	public void getInfo(){
 		String hwtype = getBytes(2);
 		String prtype = getBytes(2);
 		String hwaddl = getBytes(1);
@@ -17,8 +18,7 @@ public class ARPAnalyzer implements NetworkPacket{
 		String spa = getIP(getBytes(4));
 		String tha = getAddress(getBytes(6));
 		String tpa = getIP(getBytes(4));
-		String[] allInfo = {hwtype, prtype, hwaddl, praddl, oper, sha, spa, tha, tpa};
-		return allInfo;
+		thisLayer = {hwtype, prtype, hwaddl, praddl, oper, sha, spa, tha, tpa};
 	}
 
 	public String getBytes(int amount){
