@@ -1,7 +1,7 @@
 public class ARPAnalyzer implements NetworkPacket{
 
 	String packet = "";
-	private String[] thisLayer;
+	private String[] thisLayer = new String[9];
 	final String type = "arp";
 
 	public ARPAnalyzer(String packet){
@@ -9,16 +9,15 @@ public class ARPAnalyzer implements NetworkPacket{
 	}
 
 	public void getInfo(){
-		String hwtype = getBytes(2);
-		String prtype = getBytes(2);
-		String hwaddl = getBytes(1);
-		String praddl = getBytes(1);
-		String oper = getBytes(2);
-		String sha = getAddress(getBytes(6));
-		String spa = getIP(getBytes(4));
-		String tha = getAddress(getBytes(6));
-		String tpa = getIP(getBytes(4));
-		thisLayer = {hwtype, prtype, hwaddl, praddl, oper, sha, spa, tha, tpa};
+		thisLayer[0] = getBytes(2); // Hardware Type
+		thisLayer[1] = getBytes(2); // Protocol Type
+		thisLayer[2] = getBytes(1); // Hardware Address Length
+		thisLayer[3] = getBytes(1); // Protocol Address Length
+		thisLayer[4] = getBytes(2); // Operation Type
+		thisLayer[5] = getAddress(getBytes(6)); // Sender MAC
+		thisLayer[6] = getIP(getBytes(4)); // Sender IP
+		thisLayer[7] = getAddress(getBytes(6)); // Target MAC
+		thisLayer[8] = getIP(getBytes(4)); // Target IP
 	}
 
 	public String getBytes(int amount){
@@ -63,26 +62,30 @@ public class ARPAnalyzer implements NetworkPacket{
 		}
 	}
 
-	public String prettyPrint(String[] allInfo, boolean onlyHeader){
-		if (allInfo[0].equals("0001")){
-			allInfo[0] = "Ethernet";
+	public String prettyPrint(boolean headerFlag, String typeFlag){
+		if (thisLayer[0].equals("0001")){
+			thisLayer[0] = "Ethernet";
 		}
-		if(allInfo[1].equals("0800")){
-			allInfo[1] = "IPv4";
+		if(thisLayer[1].equals("0800")){
+			thisLayer[1] = "IPv4";
 		}
-		String thisInfo = 
-		"+======================================================================================+\n" +
-		"|                                    ARP Header                                        |\n" +
-		"+======================================================================================+\n" +
-		"| Hardware Type: " + allInfo[0] + "       | Protocol Type: " + allInfo[1] + "        | Hardware Add Length: " + allInfo[2] + " |\n" +
-		"+-------------------------------+----------------------------+-------------------------+\n" +
-		"| Protocol Addr Length: " + allInfo[3] + "      | Operation: " + allInfo[4] + "                                      |\n" +
-		"+-------------------------------+------------------------------------------------------+\n" +
-		"| Sender MAC: " + allInfo[5] + " | Sender IP: " + allInfo[6] + "                           |\n" +
-		"+-------------------------------+------------------------------------------------------+\n" +
-		"| Target MAC: " + allInfo[7] + " | Target IP: " + allInfo[8] + "                           |\n" +
-		"+-------------------------------+------------------------------------------------------+\n\n\n";
-		return thisInfo;
+		if (headerFlag && !typeFlag.equals(type)){
+			return "";
+		} else {
+			String thisInfo = 
+			"+======================================================================================+\n" +
+			"|                                    ARP Header                                        |\n" +
+			"+======================================================================================+\n" +
+			"| Hardware Type: " + thisLayer[0] + "       | Protocol Type: " + thisLayer[1] + "        | Hardware Add Length: " + thisLayer[2] + " |\n" +
+			"+-------------------------------+----------------------------+-------------------------+\n" +
+			"| Protocol Addr Length: " + thisLayer[3] + "      | Operation: " + thisLayer[4] + "                                      |\n" +
+			"+-------------------------------+------------------------------------------------------+\n" +
+			"| Sender MAC: " + thisLayer[5] + " | Sender IP: " + thisLayer[6] + "                           |\n" +
+			"+-------------------------------+------------------------------------------------------+\n" +
+			"| Target MAC: " + thisLayer[7] + " | Target IP: " + thisLayer[8] + "                           |\n" +
+			"+-------------------------------+------------------------------------------------------+\n";
+			return thisInfo;
+		}
 	}	
 	
 }

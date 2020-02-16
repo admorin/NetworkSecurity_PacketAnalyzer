@@ -6,7 +6,7 @@ public class IPAnalyzer implements NetworkPacket{
     // 0x01 = ICMP
 
     String packet = "";
-    private String[] thisLayer;
+    private String[] thisLayer = new String[12];
     final String type = "ip";
 
     public IPAnalyzer(String packet){
@@ -15,27 +15,27 @@ public class IPAnalyzer implements NetworkPacket{
 
 	public void getInfo(){
 		String versANDihl = getBytes(1);
-		String version = String.valueOf(versANDihl.charAt(0));
-		String ihl = String.valueOf(versANDihl.charAt(1));
-		int headerlen = Integer.parseInt(ihl);
-		String options = "";
-		String dscpecn = getBytes(1);
-		String totallength = getBytes(2);
-		totallength = String.valueOf(Integer.parseInt(totallength,16));
-		String identification = getBytes(2);
-		String offset = getBytes(2);
-		offset = String.valueOf(Integer.parseInt(offset,16));
-		String time2live = getBytes(1);
-		time2live = String.valueOf(Integer.parseInt(time2live, 16));
-		String protocol = getProtocol(getBytes(1));
-		String headerCS = "0x" + getBytes(2);
-		String srcIP = getIP(getBytes(4)); //12-15
-		String destIP = getIP(getBytes(4)); //16-19
+		thisLayer[0] = String.valueOf(versANDihl.charAt(0)); // Version
+		thisLayer[1] = String.valueOf(versANDihl.charAt(1)); // IHL
+		int headerlen = Integer.parseInt(thisLayer[1]);
+		thisLayer[2] = getBytes(1); // DSCP/ECN
+		thisLayer[3] = getBytes(2); // Total Length
+		thisLayer[3] = String.valueOf(Integer.parseInt(thisLayer[3],16));
+		thisLayer[4] = getBytes(2); // Identification
+		thisLayer[5] = getBytes(2); // Offset
+		thisLayer[5] = String.valueOf(Integer.parseInt(thisLayer[5],16));
+		thisLayer[6] = getBytes(1); // Time to Live
+		thisLayer[6] = String.valueOf(Integer.parseInt(thisLayer[6], 16));
+		thisLayer[7] = getProtocol(getBytes(1)); // Protocol
+		thisLayer[8] = "0x" + getBytes(2); // Header Checksum
+		thisLayer[9] = getIP(getBytes(4)); // Source IP
+		thisLayer[10] = getIP(getBytes(4)); // Destination IP
+		thisLayer[11] = ""; // Options
 		if (headerlen > 5){
-			options = getOptions(headerlen);
+			thisLayer[11] = getOptions(headerlen);
 		}
-		thisLayer = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
-		    srcIP, destIP, options};
+		// thisLayer = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
+		//     srcIP, destIP, options};
 	}
 
 	public String getBytes(int amount){
@@ -99,31 +99,35 @@ public class IPAnalyzer implements NetworkPacket{
 		return formatString(optionsString, 49);
 	}
 
-	public String prettyPrint(String[] allInfo, boolean onlyHeader){
-		String totallength = formatString(allInfo[3], 5);
-		String offset = formatString(allInfo[5], 5);
-		String time2live = formatString(allInfo[6], 3);
-		String thisInfo = 
-		"+======================================================================================+\n" +
-		"|                                     IP Header                                        |\n" +
-		"+======================================================================================+\n" +
-		"| Version: " + allInfo[0] + "     | Header Length: " + allInfo[1] + "     | DSCP/ECN: " + allInfo[2] + "     | Total Length: " + totallength + "       |\n" + 
-		"+----------------+----------------------+------------------+---------------------------+\n" +
-		"| Identification: " + allInfo[4] + "                  | Offset: " + offset + "    | Time to Live: " + time2live + "         |\n" +
-		"+---------------------------------------+------------------+---------------------------+\n" +
-		"| Protocol: " + allInfo[7] + "                        | Checksum: " + allInfo[8] + "                             |\n" +
-		"+---------------------------------------+----------------------------------------------+\n" +
-		"| Source IP: " + allInfo[9] + "            | Dest IP: " + allInfo[10] + "                     |\n";
-		if (allInfo[11].equals("")){
-			thisInfo = thisInfo + 
-			"+---------------------------------------+----------------------------------------------+\n\n\n";
+	public String prettyPrint(boolean headerFlag, String typeFlag){
+		String totallength = formatString(thisLayer[3], 5);
+		String offset = formatString(thisLayer[5], 5);
+		String time2live = formatString(thisLayer[6], 3);
+		if (headerFlag && !typeFlag.equals(type)){
+			return "";
 		} else {
-			thisInfo = thisInfo +
+			String thisInfo = 
+			"+======================================================================================+\n" +
+			"|                                     IP Header                                        |\n" +
+			"+======================================================================================+\n" +
+			"| Version: " + thisLayer[0] + "     | Header Length: " + thisLayer[1] + "     | DSCP/ECN: " + thisLayer[2] + "     | Total Length: " + totallength + "       |\n" + 
+			"+----------------+----------------------+------------------+---------------------------+\n" +
+			"| Identification: " + thisLayer[4] + "                  | Offset: " + offset + "    | Time to Live: " + time2live + "         |\n" +
+			"+---------------------------------------+------------------+---------------------------+\n" +
+			"| Protocol: " + thisLayer[7] + "                        | Checksum: " + thisLayer[8] + "                             |\n" +
 			"+---------------------------------------+----------------------------------------------+\n" +
-		    "| Options: " + allInfo[11] + "                           |\n" +
-		    "+---------------------------------------+----------------------------------------------+\n\n\n";
+			"| Source IP: " + thisLayer[9] + "            | Dest IP: " + thisLayer[10] + "                     |\n";
+			if (thisLayer[11].equals("")){
+				thisInfo = thisInfo + 
+				"+---------------------------------------+----------------------------------------------+\n\n\n";
+			} else {
+				thisInfo = thisInfo +
+				"+---------------------------------------+----------------------------------------------+\n" +
+			    "| Options: " + thisLayer[11] + "                           |\n" +
+			    "+---------------------------------------+----------------------------------------------+\n";
+			}
+		    return thisInfo;
 		}
-		return thisInfo;
 	}	
 	
 }

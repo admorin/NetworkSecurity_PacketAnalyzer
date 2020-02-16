@@ -20,7 +20,7 @@ public class PacketSniffer {
     static String inputFile = "";
     static String outputFile = "";
     static String filter = ""; // eth, arp, ip, icmp, tcp, or udp
-    static boolean headers = false;
+    static boolean headerFlag = false;
 
 
 
@@ -57,8 +57,8 @@ public class PacketSniffer {
             }
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
             analyze.getInfo();
-            if(info != null && analyze.isType(filter)){
-                String prettyInfo = analyze.prettyPrint(info, headers);
+            if(analyze.isValid() && analyze.isType(filter)){
+                String prettyInfo = analyze.prettyPrint(headerFlag, filter);
                 packetCount++;
                 if (outputFile.equals("")){
                     System.out.println(prettyInfo);
@@ -168,7 +168,7 @@ public class PacketSniffer {
                     if (filter.equals("")){
                         System.out.println("No type selected, printing all headers.");
                     } else {
-                        headers = true;
+                        headerFlag = true;
                         System.out.println("\tPrinting only header info of type: " + filter);
                     }
                 }

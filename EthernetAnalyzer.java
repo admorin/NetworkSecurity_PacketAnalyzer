@@ -8,8 +8,8 @@ public class EthernetAnalyzer implements NetworkPacket{
 
 	boolean valid = false;
 	String packet = "";
-	private String[] thisLayer;
-	NetworkPacket nextPack;
+	private String[] thisLayer = new String[3];
+	private NetworkPacket nextPack;
 	final String type = "eth";
 
 	public EthernetAnalyzer(String packet){
@@ -17,16 +17,23 @@ public class EthernetAnalyzer implements NetworkPacket{
 	}
 
 	public void getInfo(){
-		String destMAC = getAddress(getBytes(6));
-		String sourceMAC = getAddress(getBytes(6));
-		String etherType = getBytes(2);
-		thisLayer = {sourceMAC, destMAC, etherType};
-		if (etherType.equals("0800")){ // IPv4
+		thisLayer[0] = getAddress(getBytes(6));
+		thisLayer[1] = getAddress(getBytes(6));
+		thisLayer[2] = getBytes(2);
+		if (thisLayer[2].equals("0800")){ // IPv4
 			nextPack = new IPAnalyzer(packet);
 			nextPack.getInfo();
-		} else if (etherType.equals("0806")){
+		} else if (thisLayer[2].equals("0806")){
 			nextPack = new ARPAnalyzer(packet);
 			nextPack.getInfo();
+		}
+	}
+
+	public boolean isValid(){
+		if (nextPack != null){
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -56,20 +63,22 @@ public class EthernetAnalyzer implements NetworkPacket{
 		return address;
 	}
 
-	public String prettyPrint(String[] allInfo, boolean onlyHeader){
-		if (allInfo[2].equals("0800")){
-			allInfo[2] = "IPv4";
-		} else if(allInfo[2].equals("0806")){
-			allInfo[2] = "ARP ";
+	public String prettyPrint(boolean headerFlag, String typeFlag){
+		if (thisLayer[2].equals("0800")){
+			thisLayer[2] = "IPv4";
+		} else if(thisLayer[2].equals("0806")){
+			thisLayer[2] = "ARP ";
 		}
-		String thisInfo = 
-		"+======================================================================================+\n" +
-		"|                                    Ethernet Header                                   |\n" +
-		"+======================================================================================+\n" +
-		"| Source MAC: " + allInfo[0] + " | Destination MAC: " + allInfo[1] + " | EtherType: " + allInfo[2] + " |\n" +
-		"+-------------------------------+------------------------------------+-----------------+\n" +
-		"|          |          |          |          |          |          |          |         |\n" +
-		"v          v          v          v          v          v          v          v         v\n";
-		return thisInfo;
-	}	
+		if (headerFlag && !typeFlag.equals(type)){
+			return "" + nextPack.prettyPrint(headerFlag, typeFlag);
+		} else {
+			String thisInfo = 
+			"+======================================================================================+\n" +
+			"|                                    Ethernet Header                                   |\n" +
+			"+======================================================================================+\n" +
+			"| Source MAC: " + thisLayer[0] + " | Destination MAC: " + thisLayer[1] + " | EtherType: " + thisLayer[2] + " |\n" +
+			"+-------------------------------+------------------------------------+-----------------+\n";
+		    return thisInfo + nextPack.prettyPrint(headerFlag, typeFlag);
+		}
+	}
 }
