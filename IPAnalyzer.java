@@ -7,6 +7,7 @@ public class IPAnalyzer implements NetworkPacket{
 
     String packet = "";
     private String[] thisLayer = new String[12];
+    private NetworkPacket nextPack;
     final String type = "ip";
 
     public IPAnalyzer(String packet){
@@ -33,6 +34,16 @@ public class IPAnalyzer implements NetworkPacket{
 		thisLayer[11] = ""; // Options
 		if (headerlen > 5){
 			thisLayer[11] = getOptions(headerlen);
+		}
+		if (thisLayer[7].equals("TCP")){
+			nextPack = new TCPAnalyzer(packet);
+			nextPack.getInfo();
+		} else if (thisLayer[7].equals("UDP")){
+			nextPack = new UDPAnalyzer(packet);
+			nextPack.getInfo();
+		} else if (thisLayer[7].equals("ICMP")){
+			nextPack = new ICMPAnalyzer(packet);
+			nextPack.getInfo();
 		}
 		// thisLayer = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
 		//     srcIP, destIP, options};
@@ -104,7 +115,7 @@ public class IPAnalyzer implements NetworkPacket{
 		String offset = formatString(thisLayer[5], 5);
 		String time2live = formatString(thisLayer[6], 3);
 		if (headerFlag && !typeFlag.equals(type)){
-			return "";
+			return "" + nextPack.prettyPrint(headerFlag, typeFlag);
 		} else {
 			String thisInfo = 
 			"+======================================================================================+\n" +
@@ -119,14 +130,14 @@ public class IPAnalyzer implements NetworkPacket{
 			"| Source IP: " + thisLayer[9] + "            | Dest IP: " + thisLayer[10] + "                     |\n";
 			if (thisLayer[11].equals("")){
 				thisInfo = thisInfo + 
-				"+---------------------------------------+----------------------------------------------+\n\n\n";
+				"+---------------------------------------+----------------------------------------------+\n";
 			} else {
 				thisInfo = thisInfo +
 				"+---------------------------------------+----------------------------------------------+\n" +
 			    "| Options: " + thisLayer[11] + "                           |\n" +
 			    "+---------------------------------------+----------------------------------------------+\n";
 			}
-		    return thisInfo;
+		    return thisInfo + nextPack.prettyPrint(headerFlag, typeFlag);
 		}
 	}	
 	

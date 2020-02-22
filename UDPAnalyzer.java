@@ -4,7 +4,7 @@ public class UDPAnalyzer implements NetworkPacket {
     private String[] thisLayer = new String[12];
     final String type = "udp";
 
-    Public UDPAnalyzer(String packet){
+    public UDPAnalyzer(String packet){
     	this.packet = packet;
     }
 
@@ -27,6 +27,6 @@ public class UDPAnalyzer implements NetworkPacket {
 	}
 
 	public String prettyPrint(boolean headerFlag, String typeFlag){
-
+		return "";
 	}
 }

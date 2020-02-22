@@ -27,6 +27,6 @@ public class TCPAnalyzer implements NetworkPacket {
 	}
 
 	public String prettyPrint(boolean headerFlag, String typeFlag){
-
+		return "";
 	}
 }
