@@ -62,17 +62,8 @@ public class ARPAnalyzer implements NetworkPacket{
 		}
 	}
 
-	public String prettyPrint(boolean headerFlag, String typeFlag){
-		if (thisLayer[0].equals("0001")){
-			thisLayer[0] = "Ethernet";
-		}
-		if(thisLayer[1].equals("0800")){
-			thisLayer[1] = "IPv4";
-		}
-		if (headerFlag && !typeFlag.equals(type)){
-			return "";
-		} else {
-			String thisInfo = 
+	private String getReadable(){
+		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                    ARP Header                                        |\n" +
 			"+======================================================================================+\n" +
@@ -84,7 +75,32 @@ public class ARPAnalyzer implements NetworkPacket{
 			"+-------------------------------+------------------------------------------------------+\n" +
 			"| Target MAC: " + thisLayer[7] + " | Target IP: " + thisLayer[8] + "                           |\n" +
 			"+-------------------------------+------------------------------------------------------+\n";
-			return thisInfo;
+		return thisInfo;
+	}
+
+	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
+		if (thisLayer[0].equals("0001")){
+			thisLayer[0] = "Ethernet";
+		}
+		if(thisLayer[1].equals("0800")){
+			thisLayer[1] = "IPv4";
+		}
+		if (headerFlag && !conditions[0].equals(type)){ // Looking for specific header and this isn't it.
+			return "";
+		} else if(orFlag){ // Looking for a specific IP Address.
+			if (conditions[1].equals(thisLayer[6].trim()) || conditions[2].equals(thisLayer[8].trim())){
+				return getReadable();
+			} else {
+				return "";
+			}
+		} else if (andFlag){
+			if (conditions[1].equals(thisLayer[6].trim()) && conditions[2].equals(thisLayer[8].trim())){
+				return getReadable();
+			} else {
+				return "";
+			}
+		} else {
+			return getReadable();
 		}
 	}	
 	

@@ -63,14 +63,17 @@ public class EthernetAnalyzer implements NetworkPacket{
 		return address;
 	}
 
-	public String prettyPrint(boolean headerFlag, String typeFlag){
+	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
 		if (thisLayer[2].equals("0800")){
 			thisLayer[2] = "IPv4";
 		} else if(thisLayer[2].equals("0806")){
 			thisLayer[2] = "ARP ";
 		}
-		if (headerFlag && !typeFlag.equals(type)){
-			return "" + nextPack.prettyPrint(headerFlag, typeFlag);
+		String nextHeader = nextPack.prettyPrint(headerFlag, andFlag, orFlag, conditions);
+		if (headerFlag && !conditions[0].equals(type)){
+			return "" + nextHeader;
+		} else if (nextHeader.equals("")){
+			return "";
 		} else {
 			String thisInfo = 
 			"+======================================================================================+\n" +
@@ -78,7 +81,7 @@ public class EthernetAnalyzer implements NetworkPacket{
 			"+======================================================================================+\n" +
 			"| Source MAC: " + thisLayer[0] + " | Destination MAC: " + thisLayer[1] + " | EtherType: " + thisLayer[2] + " |\n" +
 			"+-------------------------------+------------------------------------+-----------------+\n";
-		    return thisInfo + nextPack.prettyPrint(headerFlag, typeFlag);
+		    return thisInfo + nextHeader;
 		}
 	}
 }

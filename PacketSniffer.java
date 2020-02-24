@@ -20,12 +20,28 @@ public class PacketSniffer {
     static String inputFile = "";
     static String outputFile = "";
     static String filter = ""; // eth, arp, ip, icmp, tcp, or udp
-    static boolean headerFlag = false;
+    static boolean headF = false;
+    static String sadd = "";
+    static String dadd = "";
+    static String sprt1 = "";
+    static String sprt2 = "";
+    static String dprt1 = "";
+    static String dprt2 = "";
+    static boolean andF = false;
+    static boolean orF = false;
+    private static String[] flags = new String [7];
 
 
 
     public static void main(String[] args) {
         parseFlags(args);
+        flags[0] = filter;
+        flags[1] = sadd;
+        flags[2] = dadd;
+        flags[3] = sprt1;
+        flags[4] = sprt2;
+        flags[5] = dprt1;
+        flags[6] = dprt2;
         int packetCount = 0;
         if (inputFile.equals("")){ //Reading from driver, so setup the driver.
             driver=new SimplePacketDriver();
@@ -58,17 +74,20 @@ public class PacketSniffer {
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
             analyze.getInfo();
             if(analyze.isValid() && analyze.isType(filter)){
-                String prettyInfo = analyze.prettyPrint(headerFlag, filter);
-                packetCount++;
-                if (outputFile.equals("")){
-                    System.out.println(prettyInfo);
-                } else {
-                    try{
-                        wr.write(prettyInfo);
-                    } catch (IOException e){
-                        System.out.println("ERROR: " + e);
+                String prettyInfo = analyze.prettyPrint(headF, andF, orF, flags);
+                if (!prettyInfo.equals("")){
+                    packetCount++;
+                    if (outputFile.equals("")){
+                        System.out.println(prettyInfo);
+                    } else {
+                        try{
+                            wr.write(prettyInfo);
+                        } catch (IOException e){
+                            System.out.println("ERROR: " + e);
                     }
                 }
+                }
+                
             }
             if (packetCount == counting){
                 flush(wr);
@@ -168,9 +187,43 @@ public class PacketSniffer {
                     if (filter.equals("")){
                         System.out.println("No type selected, printing all headers.");
                     } else {
-                        headerFlag = true;
+                        headF = true;
                         System.out.println("\tPrinting only header info of type: " + filter);
                     }
+                } else if (thisFlag.equals("-src")){
+                    sadd = args[i+1];
+                    orF = true;
+                    i++;
+                    System.out.println("\tFiltering only packets from IP Address: " + sadd);
+                } else if (thisFlag.equals("-dst")){
+                    dadd = args[i+1];
+                    orF = true;
+                    i++;
+                    System.out.println("\tFiltering only packets to IP Address: " + dadd);
+                } else if (thisFlag.equals("-sord")){
+                    sadd = args[i+1];
+                    dadd = args[i+2];
+                    orF = true;
+                    i += 2;
+                    System.out.println("\tFiltering packets from IP Address: " + sadd + "\n\tor to IP Address: " + dadd);
+                } else if (thisFlag.equals("-sandd")){
+                    sadd = args[i+1];
+                    dadd = args[i+2];
+                    andF = true;
+                    i += 2;
+                    System.out.println("\tFiltering packets from IP Address: " + sadd + "\n\tand to IP Address: " + dadd);
+                } else if (thisFlag.equals("-sport")){
+                    sprt1 = args[i+1];
+                    sprt2 = args[i+2];
+                    i += 2;
+                    System.out.println("\tFiltering packets originating from port range: " + sprt1 + " - " + sprt2);
+                } else if (thisFlag.equals("-dport")){
+                    dprt1 = args[i+1];
+                    dprt2 = args[i+2];
+                    i += 2;
+                    System.out.println("\tFiltering packets directed to port range: " + dprt1 + " - " + dprt2);
+                } else {
+                    System.out.println("ERROR: Unsure of what this flag is: " + thisFlag);
                 }
             }
             System.out.println("\nEND OF FLAGS\n");

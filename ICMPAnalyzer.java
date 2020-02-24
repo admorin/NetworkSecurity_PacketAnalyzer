@@ -54,11 +54,8 @@ public class ICMPAnalyzer implements NetworkPacket {
 		return output;
 	}
 
-	public String prettyPrint(boolean headerFlag, String typeFlag){
-		if (headerFlag && !typeFlag.equals(type)){
-			return "";
-		} else {
-			String thisInfo = 
+	private String getReadable(){
+		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                    ICMP Header                                       |\n" +
 			"+======================================================================================+\n" +
@@ -82,7 +79,13 @@ public class ICMPAnalyzer implements NetworkPacket {
 			    "+--------------------------------------------------------------------------------------+\n";
 			}
 		    return thisInfo;
+	}
+
+	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
+		if (headerFlag && !conditions[0].equals(type)){
+			return "";
 		}
+		return getReadable();
 	}
 
 }

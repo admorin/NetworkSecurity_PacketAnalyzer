@@ -35,10 +35,10 @@ public class IPAnalyzer implements NetworkPacket{
 		if (headerlen > 5){
 			thisLayer[11] = getOptions(headerlen);
 		}
-		if (thisLayer[7].equals("TCP")){
+		if (thisLayer[7].equals("TCP ")){
 			nextPack = new TCPAnalyzer(packet);
 			nextPack.getInfo();
-		} else if (thisLayer[7].equals("UDP")){
+		} else if (thisLayer[7].equals("UDP ")){
 			nextPack = new UDPAnalyzer(packet);
 			nextPack.getInfo();
 		} else if (thisLayer[7].equals("ICMP")){
@@ -103,21 +103,14 @@ public class IPAnalyzer implements NetworkPacket{
 	public String getOptions(int headerlen){
 		int bytes2get = (headerlen-5) * 4; // 4 bytes per line, and headerlen is how many lines are in options.
 		String options = getBytes(bytes2get);
-		String optionsString = "";
-		for (int i = 0; i < (headerlen-5); i+=4){
-			optionsString = optionsString + getBytes(4) + " ";
-		}
-		return formatString(optionsString, 49);
+		return formatString(options, 49);
 	}
 
-	public String prettyPrint(boolean headerFlag, String typeFlag){
+	private String getReadable(){
 		String totallength = formatString(thisLayer[3], 5);
 		String offset = formatString(thisLayer[5], 5);
 		String time2live = formatString(thisLayer[6], 3);
-		if (headerFlag && !typeFlag.equals(type)){
-			return "" + nextPack.prettyPrint(headerFlag, typeFlag);
-		} else {
-			String thisInfo = 
+		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                     IP Header                                        |\n" +
 			"+======================================================================================+\n" +
@@ -137,7 +130,30 @@ public class IPAnalyzer implements NetworkPacket{
 			    "| Options: " + thisLayer[11] + "                           |\n" +
 			    "+---------------------------------------+----------------------------------------------+\n";
 			}
-		    return thisInfo + nextPack.prettyPrint(headerFlag, typeFlag);
+			return thisInfo;
+	}
+
+	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
+		String nextString = nextPack.prettyPrint(headerFlag, andFlag, orFlag, conditions);
+		if (headerFlag && !conditions[0].equals(type)){
+			return "" + nextString;
+		} else if(orFlag){ // Looking for a specific IP Address.
+			if (conditions[1].equals(thisLayer[9].trim()) || conditions[2].equals(thisLayer[10].trim())){
+				return getReadable() + nextString;
+			} else {
+				return "";
+			}
+		} else if (andFlag){
+			if (conditions[1].equals(thisLayer[9].trim()) && conditions[2].equals(thisLayer[10].trim())){
+				return getReadable() + nextString;
+			} else {
+				return "";
+			}
+		} else {
+			if (!nextString.equals("")){
+				return getReadable() + nextString;
+			}
+		    return "";
 		}
 	}	
 	
