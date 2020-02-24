@@ -34,8 +34,10 @@ public class PacketGenerator
         //Open first found adapter (usually first Ethernet card found)
         if (driver.openAdapter(adapters[choice-1])) System.out.println("Adapter is open: "+adapters[choice-1]);
         //TODO if driver choice is bad, catch error here.
-
+        int counter = 1;
         while(true){
+        	System.out.println(counter);
+        	counter++;
         	String hexPacket = readPacketFromFile();
         	if(hexPacket == null){
         		return;
@@ -47,8 +49,8 @@ public class PacketGenerator
 	        System.out.println("Packet: "+Packet+" with capacity: "+Packet.capacity());
 	        // System.out.println(driver.byteArrayToString(packet));
 	        //Send the same packet now (change headers)
-	        // for (int i=0; i< 6; i++) packet[i]=1; //Destination
-	        // for (int i=0; i< 6; i++) packet[i+6]=2; //Source
+	        // for (int i=0; i< 12; i++) packet[i]=1; //Destination
+	        // for (int i=0; i< packet.length; i++) packet[i]=1; //Source
 	        // packet[12]=9; packet[13]=10; //Make up a type
 			//Send packet
 	        if (!driver.sendPacket(packet)) System.out.println("Error sending packet!");
@@ -80,14 +82,12 @@ public class PacketGenerator
             }
     }
 
-        public static byte[] hexStringToByteArray(String s) {
-		    int len = s.length();
-		    byte[] data = new byte[len / 2];
-		    for (int i = 0; i < len; i += 2) {
-		        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-		                             + Character.digit(s.charAt(i+1), 16));
+        public static byte[] hex2Byte(String hex) {
+		    byte[] packet = new byte[hex.length() / 2];
+		    for (int i = 0; i < hex.length(); i += 2) {
+		        packet[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
 		    }
-		    return data;
+		    return packet;
 		}
  
 }
