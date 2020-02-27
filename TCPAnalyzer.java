@@ -75,7 +75,7 @@ public class TCPAnalyzer implements NetworkPacket {
 		return output;
 	}
 
-	private String getReadable(){
+	private String getReadable(boolean headerFlag){
 		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                     TCP Header                                       |\n" +
@@ -95,19 +95,18 @@ public class TCPAnalyzer implements NetworkPacket {
 			} else {
 				thisInfo = thisInfo +
 				"+--------+--------+--------+-------------------+----------------+----------------------+\n" +
-			    "| Options: " + formatString(getBytes(37), 75) + " |\n";
-			    String thisDat;
-			    while ((thisDat = getBytes(42)).length() > 0){
-			    	thisInfo = thisInfo + "| " + formatString(thisDat, 84) + " |\n";
-			    }
+			    "| Options: " + formatString(getOptions(headerlen), 75) + " |\n";
 			    thisInfo = thisInfo +
 			    "+---------------------------------------+----------------------------------------------+\n";
+			}
+			if(!headerFlag){
+				thisInfo = thisInfo + "PAYLOAD: \n" + packet + "\n";
 			}
 		    return thisInfo;
 	}
 
 	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
-		if (headerFlag && !conditions[0].equals(type)){
+		if (!conditions[0].equals("") && !conditions[0].equals(type)){
 			return "";
 		} else if(!conditions[3].equals("")){ // There is a SOURCE port restriction
 			int prt1 = Integer.parseInt(conditions[3]);
@@ -119,7 +118,7 @@ public class TCPAnalyzer implements NetworkPacket {
 				prt2 = temp;
 			}
 			if(thisprt >= prt1 && thisprt <= prt2){
-				return getReadable();
+				return getReadable(headerFlag);
 			}
 			return "";
 		} else if(!conditions[5].equals("")){ // There is a DEST port restriction
@@ -132,10 +131,15 @@ public class TCPAnalyzer implements NetworkPacket {
 				prt2 = temp;
 			}
 			if(thisprt >= prt1 && thisprt <= prt2){
-				return getReadable();
+				return getReadable(headerFlag);
 			}
 			return "";
 		}
-		return getReadable();
+		return getReadable(headerFlag);
 	}
 }
+
+
+
+
+

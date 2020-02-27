@@ -73,21 +73,18 @@ public class PacketSniffer {
             }
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
             analyze.getInfo();
-            if(analyze.isValid() && analyze.isType(filter)){
-                String prettyInfo = analyze.prettyPrint(headF, andF, orF, flags);
-                if (!prettyInfo.equals("")){
-                    packetCount++;
-                    if (outputFile.equals("")){
-                        System.out.println(prettyInfo);
-                    } else {
-                        try{
-                            wr.write(prettyInfo);
-                        } catch (IOException e){
-                            System.out.println("ERROR: " + e);
+            String prettyInfo = analyze.prettyPrint(headF, andF, orF, flags);
+            if (!prettyInfo.equals("")){
+                packetCount++;
+                if (outputFile.equals("")){
+                    System.out.println(prettyInfo);
+                } else {
+                    try{
+                        wr.write(prettyInfo);
+                    } catch (IOException e){
+                        System.out.println("ERROR: " + e);
                     }
                 }
-                }
-                
             }
             if (packetCount == counting){
                 flush(wr);

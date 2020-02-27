@@ -62,7 +62,7 @@ public class ARPAnalyzer implements NetworkPacket{
 		}
 	}
 
-	private String getReadable(){
+	private String getReadable(boolean headflag){
 		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                    ARP Header                                        |\n" +
@@ -74,7 +74,10 @@ public class ARPAnalyzer implements NetworkPacket{
 			"| Sender MAC: " + thisLayer[5] + " | Sender IP: " + thisLayer[6] + "                           |\n" +
 			"+-------------------------------+------------------------------------------------------+\n" +
 			"| Target MAC: " + thisLayer[7] + " | Target IP: " + thisLayer[8] + "                           |\n" +
-			"+-------------------------------+------------------------------------------------------+\n";
+			"+-------------------------------+------------------------------------------------------+\n\n";
+			if (!headflag){
+				thisInfo = thisInfo + "PAYLOAD: \n" + packet + "\n";
+			}
 		return thisInfo;
 	}
 
@@ -85,23 +88,24 @@ public class ARPAnalyzer implements NetworkPacket{
 		if(thisLayer[1].equals("0800")){
 			thisLayer[1] = "IPv4";
 		}
-		if (headerFlag && !conditions[0].equals(type)){ // Looking for specific header and this isn't it.
+		if (!conditions[0].equals("") && !conditions[0].equals(type)){
 			return "";
-		} else if(orFlag){ // Looking for a specific IP Address.
-			if (conditions[1].equals(thisLayer[6].trim()) || conditions[2].equals(thisLayer[8].trim())){
-				return getReadable();
+		}
+		if (orFlag){
+		    if (conditions[1].equals(thisLayer[6].trim()) || conditions[2].equals(thisLayer[8].trim())){
+			    return getReadable(headerFlag);
 			} else {
 				return "";
 			}
 		} else if (andFlag){
 			if (conditions[1].equals(thisLayer[6].trim()) && conditions[2].equals(thisLayer[8].trim())){
-				return getReadable();
+				return getReadable(headerFlag);
 			} else {
 				return "";
 			}
-		} else {
-			return getReadable();
 		}
+		return getReadable(headerFlag);	
+		// If headflag set, don't return payload.
 	}	
 	
 }

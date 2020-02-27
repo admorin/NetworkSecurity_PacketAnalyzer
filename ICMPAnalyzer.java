@@ -82,10 +82,11 @@ public class ICMPAnalyzer implements NetworkPacket {
 	}
 
 	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
-		if (headerFlag && !conditions[0].equals(type)){
+		if (!conditions[0].equals("") && !conditions[0].equals(type)){
 			return "";
+		} else {
+			return getReadable(headerFlag);
 		}
-		return getReadable();
 	}
 
 }

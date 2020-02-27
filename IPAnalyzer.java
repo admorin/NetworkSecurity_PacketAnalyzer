@@ -134,27 +134,30 @@ public class IPAnalyzer implements NetworkPacket{
 	}
 
 	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
-		String nextString = nextPack.prettyPrint(headerFlag, andFlag, orFlag, conditions);
-		if (headerFlag && !conditions[0].equals(type)){
-			return "" + nextString;
-		} else if(orFlag){ // Looking for a specific IP Address.
-			if (conditions[1].equals(thisLayer[9].trim()) || conditions[2].equals(thisLayer[10].trim())){
-				return getReadable() + nextString;
-			} else {
-				return "";
-			}
-		} else if (andFlag){
-			if (conditions[1].equals(thisLayer[9].trim()) && conditions[2].equals(thisLayer[10].trim())){
-				return getReadable() + nextString;
-			} else {
-				return "";
-			}
-		} else {
-			if (!nextString.equals("")){
-				return getReadable() + nextString;
-			}
-		    return "";
+		if (conditions[0].equals("") || conditions[0].equals(type)){
+			conditions[0] = "";
 		}
+		String nextHeader = nextPack.prettyPrint(headerFlag, andFlag, orFlag, conditions);
+
+		if(nextHeader.equals("")){
+			return "";
+		} else {
+			if(orFlag){ // Looking for a specific IP Address.
+				if (conditions[1].equals(thisLayer[9].trim()) || conditions[2].equals(thisLayer[10].trim())){
+					return getReadable() + nextHeader;
+				} else {
+					return "";
+				}
+			} else if (andFlag){
+				if (conditions[1].equals(thisLayer[9].trim()) && conditions[2].equals(thisLayer[10].trim())){
+					return getReadable() + nextHeader;
+				} else {
+					return "";
+				}
+			}
+			return getReadable() + nextHeader;
+		}
+
 	}	
 	
 }

@@ -63,25 +63,38 @@ public class EthernetAnalyzer implements NetworkPacket{
 		return address;
 	}
 
+	private String getReadable(){
+		String thisInfo = 
+			"+======================================================================================+\n" +
+			"|                                    Ethernet Header                                   |\n" +
+			"+======================================================================================+\n" +
+			"| Source MAC: " + thisLayer[0] + " | Destination MAC: " + thisLayer[1] + " | EtherType: " + thisLayer[2] + " |\n" +
+			"+-------------------------------+------------------------------------+-----------------+\n";
+		return thisInfo;
+	}
+
 	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
 		if (thisLayer[2].equals("0800")){
 			thisLayer[2] = "IPv4";
 		} else if(thisLayer[2].equals("0806")){
 			thisLayer[2] = "ARP ";
 		}
+		if (conditions[0].equals("") || conditions[0].equals(type)){
+			conditions[0] = "";
+		}
 		String nextHeader = nextPack.prettyPrint(headerFlag, andFlag, orFlag, conditions);
-		if (headerFlag && !conditions[0].equals(type)){
-			return "" + nextHeader;
-		} else if (nextHeader.equals("")){
+		if(nextHeader.equals("")){
 			return "";
 		} else {
-			String thisInfo = 
-			"+======================================================================================+\n" +
-			"|                                    Ethernet Header                                   |\n" +
-			"+======================================================================================+\n" +
-			"| Source MAC: " + thisLayer[0] + " | Destination MAC: " + thisLayer[1] + " | EtherType: " + thisLayer[2] + " |\n" +
-			"+-------------------------------+------------------------------------+-----------------+\n";
-		    return thisInfo + nextHeader;
+			return getReadable() + nextHeader;
 		}
 	}
 }
+
+
+
+
+
+
+
+

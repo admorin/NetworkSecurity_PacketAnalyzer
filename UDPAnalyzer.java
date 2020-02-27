@@ -72,7 +72,7 @@ public class UDPAnalyzer implements NetworkPacket {
 	}
 
 	public String prettyPrint(boolean headerFlag, boolean andFlag, boolean orFlag, String[] conditions){
-		if (headerFlag && !conditions[0].equals(type)){
+		if (!conditions[0].equals("") && !conditions[0].equals(type)){
 			return "";
 		} else if(!conditions[3].equals("")){ // There is a SOURCE port restriction
 			int prt1 = Integer.parseInt(conditions[3]);
