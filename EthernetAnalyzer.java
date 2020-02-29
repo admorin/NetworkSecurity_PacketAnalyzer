@@ -26,6 +26,12 @@ public class EthernetAnalyzer implements NetworkPacket{
 		} else if (thisLayer[2].equals("0806")){
 			nextPack = new ARPAnalyzer(packet);
 			nextPack.getInfo();
+		} else if (thisLayer[2].equals("86DD")){
+			nextPack = new IPAnalyzer(packet);
+			nextPack.getInfo();
+		} else {
+			System.out.println("Invalid Protocol: " + thisLayer[2]);
+			System.out.println(thisLayer[0] + "\n" + thisLayer[1]);
 		}
 	}
 

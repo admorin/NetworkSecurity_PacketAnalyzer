@@ -9,6 +9,9 @@ public class PacketGenerator
 	static BufferedReader br;
 
 	public static void main(String[] args) {
+		//********************************//
+		// Open a file if args are given. //
+		//********************************//
 		if(args.length > 0){
 			String inputFile = args[0];
             System.out.println("\tAttempting to open file: " + inputFile + "...");
@@ -24,6 +27,11 @@ public class PacketGenerator
 			System.out.println("\tERROR: No file to read from.");
 			return;
 		}
+
+		//**********************************//
+		// Create a driver to send packets. //
+		//**********************************//
+
         SimplePacketDriver driver=new SimplePacketDriver();
 		//Get adapter names and print info
         String[] adapters=driver.getAdapterNames();
@@ -31,9 +39,19 @@ public class PacketGenerator
         for (int i=0; i< adapters.length; i++) System.out.println(i+1 + ") \tDevice Name: "+adapters[i]);
         System.out.println("Please choose your device (Enter row #):");
         int choice = scan.nextInt();
+
+        //**********************//
+		// Open adapter chosen. //
+		//**********************//
+
         //Open first found adapter (usually first Ethernet card found)
         if (driver.openAdapter(adapters[choice-1])) System.out.println("Adapter is open: "+adapters[choice-1]);
         //TODO if driver choice is bad, catch error here.
+
+        //****************************************//
+		// Loop through file sending each packet. //
+		//****************************************//
+
         int counter = 1;
         while(true){
         	System.out.println(counter);
@@ -42,17 +60,13 @@ public class PacketGenerator
         	if(hexPacket == null){
         		return;
         	}
-        	byte[] packet = hexStringToByteArray(hexPacket);
+        	byte[] packet = hex2Byte(hexPacket);
 	        //Wrap it into a ByteBuffer
 	        ByteBuffer Packet=ByteBuffer.wrap(packet);
 	        //Print packet summary
 	        System.out.println("Packet: "+Packet+" with capacity: "+Packet.capacity());
-	        // System.out.println(driver.byteArrayToString(packet));
-	        //Send the same packet now (change headers)
-	        // for (int i=0; i< 12; i++) packet[i]=1; //Destination
-	        // for (int i=0; i< packet.length; i++) packet[i]=1; //Source
-	        // packet[12]=9; packet[13]=10; //Make up a type
 			//Send packet
+			System.out.println(packet);
 	        if (!driver.sendPacket(packet)) System.out.println("Error sending packet!");
 
 
@@ -73,6 +87,7 @@ public class PacketGenerator
                             continue;
                         }
                     }
+                    System.out.println(thisLine);
                     thisPacket = thisPacket + thisLine.replaceAll("\\s+", "");
                 }
                 return null;

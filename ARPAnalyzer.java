@@ -62,6 +62,16 @@ public class ARPAnalyzer implements NetworkPacket{
 		}
 	}
 
+	private String hexToAscii(String hexStr) {
+        StringBuilder output = new StringBuilder("");
+     
+        for (int i = 0; i < hexStr.length(); i += 2) {
+            String str = hexStr.substring(i, i + 2);
+            output.append((char) Integer.parseInt(str, 16));
+        }
+        return output.toString();
+    }
+
 	private String getReadable(boolean headflag){
 		String thisInfo = 
 			"+======================================================================================+\n" +
@@ -76,7 +86,7 @@ public class ARPAnalyzer implements NetworkPacket{
 			"| Target MAC: " + thisLayer[7] + " | Target IP: " + thisLayer[8] + "                           |\n" +
 			"+-------------------------------+------------------------------------------------------+\n\n";
 			if (!headflag){
-				thisInfo = thisInfo + "PAYLOAD: \n" + packet + "\n";
+				thisInfo = thisInfo + "PAYLOAD: \n" + hexToAscii(packet) + "\n";
 			}
 		return thisInfo;
 	}

@@ -75,6 +75,16 @@ public class TCPAnalyzer implements NetworkPacket {
 		return output;
 	}
 
+	private String hexToAscii(String hexStr) {
+        StringBuilder output = new StringBuilder("");
+     
+        for (int i = 0; i < hexStr.length(); i += 2) {
+            String str = hexStr.substring(i, i + 2);
+            output.append((char) Integer.parseInt(str, 16));
+        }
+        return output.toString();
+    }
+
 	private String getReadable(boolean headerFlag){
 		String thisInfo = 
 			"+======================================================================================+\n" +
@@ -100,7 +110,7 @@ public class TCPAnalyzer implements NetworkPacket {
 			    "+---------------------------------------+----------------------------------------------+\n";
 			}
 			if(!headerFlag){
-				thisInfo = thisInfo + "PAYLOAD: \n" + packet + "\n";
+				thisInfo = thisInfo + "PAYLOAD: \n" + hexToAscii(packet) + "\n";
 			}
 		    return thisInfo;
 	}

@@ -54,7 +54,23 @@ public class ICMPAnalyzer implements NetworkPacket {
 		return output;
 	}
 
-	private String getReadable(){
+	public String getOptions(int headerlen){
+		int bytes2get = (headerlen-5) * 4; // 4 bytes per line, and headerlen is how many lines are in options.
+		String options = getBytes(bytes2get);
+		return formatString(options, 49); // This needs to be worked on, there are three options fields.
+	}
+
+	private String hexToAscii(String hexStr) {
+        StringBuilder output = new StringBuilder("");
+     
+        for (int i = 0; i < hexStr.length(); i += 2) {
+            String str = hexStr.substring(i, i + 2);
+            output.append((char) Integer.parseInt(str, 16));
+        }
+        return output.toString();
+    }
+
+	private String getReadable(boolean headerFlag){
 		String thisInfo = 
 			"+======================================================================================+\n" +
 			"|                                    ICMP Header                                       |\n" +
@@ -63,20 +79,10 @@ public class ICMPAnalyzer implements NetworkPacket {
 			"+----------------+----------------------+----------------------------------------------+\n" +
 			"| Description: " + thisLayer[3] + "                               |\n" +
 			"+--------------------------------------------------------------------------------------+\n" +
-			"| Rest of Header: " + thisLayer[4] + "                            |\n";
-			if (packet.length() == 0){
-				thisInfo = thisInfo + 
-				"+--------------------------------------------------------------------------------------+\n\n\n";
-			} else {
-				thisInfo = thisInfo +
-				"+--------------------------------------------------------------------------------------+\n" +
-			    "| Data: " + formatString(getBytes(39), 78) + " |\n";
-			    String thisDat;
-			    while ((thisDat = getBytes(42)).length() > 0){
-			    	thisInfo = thisInfo + "| " + formatString(thisDat, 84) + " |\n";
-			    }
-			    thisInfo = thisInfo +
-			    "+--------------------------------------------------------------------------------------+\n";
+			"| Rest of Header: " + thisLayer[4] + "                            |\n" +
+			"+--------------------------------------------------------------------------------------+\n";
+			if(!headerFlag){
+				thisInfo = thisInfo + "PAYLOAD: \n" + hexToAscii(packet) + "\n";
 			}
 		    return thisInfo;
 	}
