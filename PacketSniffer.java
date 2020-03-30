@@ -1,5 +1,5 @@
 import java.nio.ByteBuffer;
-import java.util.Scanner;
+import java.util.*;
 import java.io.*;
 
 public class PacketSniffer {
@@ -14,6 +14,7 @@ public class PacketSniffer {
     static BufferedWriter wr;
     static SimplePacketDriver driver;
     static int linecount = 0;
+    static int packetCount = 0;
 
     // CL Flags
     static int counting = -1;
@@ -32,6 +33,14 @@ public class PacketSniffer {
     private static String[] flags = new String [7];
 
 
+    private static LinkedList<PacketInfo> fragments = new LinkedList<PacketInfo>();
+    private static LinkedList<FragPacket> builtPackets = new LinkedList<FragPacket>();
+    private static LinkedList<FragPacket> readyPackets = new LinkedList<FragPacket>();
+    private static FragManager fragManager = new FragManager(fragments, builtPackets);
+
+    // private static HashMap<String, LinkedList> fragmap = new HashMap<String, LinkedList>();
+    // private static HashMap<String, Thread> timemap = new HashMap<String, Thread>();
+
 
     public static void main(String[] args) {
         parseFlags(args);
@@ -42,7 +51,6 @@ public class PacketSniffer {
         flags[4] = sprt2;
         flags[5] = dprt1;
         flags[6] = dprt2;
-        int packetCount = 0;
         if (inputFile.equals("")){ //Reading from driver, so setup the driver.
             driver=new SimplePacketDriver();
             Scanner scan = new Scanner(System.in);
@@ -56,39 +64,108 @@ public class PacketSniffer {
             if (driver.openAdapter(adapters[choice-1])) System.out.println("Adapter is open: "+adapters[choice-1]);
             //TODO if driver choice is bad, catch error here.
         }
-        while(true){
+        //Start the Fragment Manager.
+        Thread fragThread = new Thread(fragManager);
+        fragThread.start();
+        boolean running = true;
+        while(running){
+            // This packet starts empty.
             String hexPacket = "";
-            if(inputFile.equals("")){// Reading from driver.
+
+            // If reading from driver....
+            if(inputFile.equals("")){
                 byte[] packet = readPacketFromDriver(driver);
                 ByteBuffer Packet=ByteBuffer.wrap(packet);
-                String packetInfo = driver.byteArrayToString(packet);
+                // String packetInfo = driver.byteArrayToString(packet);
                 hexPacket = convertToHexString(packet, driver);
-            } else {
+            } // If reading from a file...
+            else {
                 hexPacket = readPacketFromFile();
                 // System.out.println(linecount);
                 if (hexPacket == null){
                     flush(wr);
-                    return;
+                    break;
                 }
             }
+            // Create an ethernet analyzer with this packet.
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
-            analyze.getInfo();
-            String prettyInfo = analyze.prettyPrint(headF, andF, orF, flags);
-            if (!prettyInfo.equals("")){
-                packetCount++;
-                if (outputFile.equals("")){
-                    System.out.println(prettyInfo);
-                } else {
-                    try{
-                        wr.write(prettyInfo);
-                    } catch (IOException e){
-                        System.out.println("ERROR: " + e);
-                    }
+            PacketInfo packetInfo = new PacketInfo();
+            analyze.getInfo(packetInfo);
+            //Fragmentation ------------------------------------------v
+            if (analyze.isFragmented()){
+                System.out.println("Fragmented!");
+                synchronized(fragments){
+                    // System.out.println("Adding to buffer...");
+                    fragments.add(packetInfo);
                 }
+            } //------------------------------------------------------^
+            else {
+                retrieveInfo(analyze);
             }
             if (packetCount == counting){
                 flush(wr);
                 break;
+            }
+            synchronized(builtPackets){
+                for(int i = 0; i < builtPackets.size(); i++){
+                    readyPackets.add(builtPackets.get(i));
+                }
+                builtPackets.clear();
+            }
+            for(int i = 0; i < readyPackets.size(); i++){
+                buildAndAnalyze(readyPackets.get(i));
+            }
+            readyPackets.clear();
+        }
+        System.out.println("Killing Frag Manager...");
+        if (fragManager != null){
+            fragManager.terminate();
+            try{
+                fragThread.join();
+                System.out.println("Frag Manager Killed Successfully.");
+            } catch (InterruptedException e){
+                System.out.println("Error Killing Frag Manager!");
+            }
+            System.out.println("Checking for remaining built packets...");
+            synchronized(builtPackets){
+                for(int i = 0; i < builtPackets.size(); i++){
+                    readyPackets.add(builtPackets.get(i));
+                }
+                builtPackets.clear();
+            }
+            for(int i = 0; i < readyPackets.size(); i++){
+                if (packetCount == counting){
+                    flush(wr);
+                    break;
+                }
+                buildAndAnalyze(readyPackets.get(i));
+                packetCount++;
+            }
+            readyPackets.clear();
+            System.out.println("Sniffer closing...");
+        }
+    }
+
+    static void buildAndAnalyze(FragPacket rebuiltPacket){
+        System.out.println("Analyzing rebuilt packets...");
+        EthernetAnalyzer analyze = new EthernetAnalyzer(rebuiltPacket.getPacket());
+        PacketInfo packetInfo = new PacketInfo();
+        analyze.getInfo(packetInfo);
+        retrieveInfo(analyze);
+    }
+
+    static void retrieveInfo(EthernetAnalyzer fullPacket){
+        String prettyInfo = fullPacket.prettyPrint(headF, andF, orF, flags);
+        if (!prettyInfo.equals("")){
+            packetCount++;
+            if (outputFile.equals("")){
+                System.out.println(prettyInfo);
+            } else {
+                try{
+                    wr.write(prettyInfo);
+                } catch (IOException e){
+                    System.out.println("ERROR: " + e);
+                }
             }
         }
     }

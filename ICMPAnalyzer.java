@@ -8,13 +8,14 @@ public class ICMPAnalyzer implements NetworkPacket {
     	this.packet = packet;
     }
 
-	public void getInfo(){
+	public void getInfo(PacketInfo packetInfo){
 		String[] typeANDcode = typeCode(getBytes(2)); // TypeANDCode
 		thisLayer[0] = typeANDcode[0];
 		thisLayer[1] = typeANDcode[1];
 		thisLayer[2] = getBytes(2); // Checksum
 		thisLayer[3] = formatString(typeANDcode[2], 41);
 		thisLayer[4] = formatString(getBytes(4),41); // Rest of Header
+		packetInfo.setInfo("ICMP", thisLayer);
 	}
 
 	public boolean isType(String filter){
@@ -25,7 +26,20 @@ public class ICMPAnalyzer implements NetworkPacket {
 		}
 	}
 
+	public boolean isFragmented(){
+		return false;
+	}
+
+	public String getID(){
+		return null;
+	}
+
+	public String[] getFragInfo(){
+		return null;
+	}
+
 	private String[] typeCode(String typeAndCode){
+		// System.out.println(typeAndCode);
 		int type = Integer.parseInt(typeAndCode.substring(0,2),16);
 		int code = Integer.parseInt(typeAndCode.substring(2,4),16);
 		String key = "ICMP123" + String.valueOf(type) + String.valueOf(code);

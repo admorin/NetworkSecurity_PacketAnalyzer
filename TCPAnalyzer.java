@@ -9,7 +9,7 @@ public class TCPAnalyzer implements NetworkPacket {
     	this.packet = packet;
     }
 
-	public void getInfo(){
+	public void getInfo(PacketInfo packetInfo){
 		thisLayer[0] = getPort(getBytes(2)); // Source Port
 		thisLayer[1] = getPort(getBytes(2)); // Destination Port
 		thisLayer[2] = getBytes(4); // Sequence Number
@@ -31,6 +31,7 @@ public class TCPAnalyzer implements NetworkPacket {
 		thisLayer[15] = getBytes(2);
 		thisLayer[16] = getBytes(2);
 		thisLayer[17] = getBytes(2);
+		packetInfo.setInfo("TCP", thisLayer);
 	}
 
 	public boolean isType(String filter){
@@ -39,6 +40,18 @@ public class TCPAnalyzer implements NetworkPacket {
 		} else {
 			return false;
 		}
+	}
+
+	public String getID(){
+		return null;
+	}
+
+	public String[] getFragInfo(){
+		return null;
+	}
+
+	public boolean isFragmented(){
+		return false;
 	}
 
 	private String getPort(String hexPort){

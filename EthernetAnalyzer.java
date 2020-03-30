@@ -8,6 +8,7 @@ public class EthernetAnalyzer implements NetworkPacket{
 
 	boolean valid = false;
 	String packet = "";
+	private PacketInfo packetInfo;
 	private String[] thisLayer = new String[3];
 	private NetworkPacket nextPack;
 	final String type = "eth";
@@ -16,23 +17,41 @@ public class EthernetAnalyzer implements NetworkPacket{
 		this.packet = packet;
 	}
 
-	public void getInfo(){
-		thisLayer[0] = getAddress(getBytes(6));
-		thisLayer[1] = getAddress(getBytes(6));
-		thisLayer[2] = getBytes(2);
+	public void getInfo(PacketInfo packetInfo){
+		thisLayer[0] = getAddress(getBytes(6)); //Source MAC
+		thisLayer[1] = getAddress(getBytes(6)); //Dest MAC
+		thisLayer[2] = getBytes(2); //Protocol
+		packetInfo.setInfo("ETH", thisLayer);
 		if (thisLayer[2].equals("0800")){ // IPv4
 			nextPack = new IPAnalyzer(packet);
-			nextPack.getInfo();
-		} else if (thisLayer[2].equals("0806")){
+			nextPack.getInfo(packetInfo);
+		} else if (thisLayer[2].equals("0806")){ // ARP
 			nextPack = new ARPAnalyzer(packet);
-			nextPack.getInfo();
+			nextPack.getInfo(packetInfo);
 		} else if (thisLayer[2].equals("86DD")){
 			nextPack = new IPAnalyzer(packet);
-			nextPack.getInfo();
+			nextPack.getInfo(packetInfo);
 		} else {
 			System.out.println("Invalid Protocol: " + thisLayer[2]);
 			System.out.println(thisLayer[0] + "\n" + thisLayer[1]);
 		}
+	}
+
+	public String getID(){
+		return nextPack.getID();
+	}
+
+	public boolean isFragmented(){
+		if(nextPack instanceof IPAnalyzer){
+			return nextPack.isFragmented();
+		} else {
+			System.out.println("ERROR: This packet is not an IP packet!");
+			return false;
+		}
+	}
+
+	public String[] getFragInfo(){
+		return nextPack.getFragInfo();
 	}
 
 	public boolean isValid(){

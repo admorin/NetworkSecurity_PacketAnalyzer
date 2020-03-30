@@ -9,7 +9,7 @@ public class UDPAnalyzer implements NetworkPacket {
     	this.packet = packet;
     }
 
-	public void getInfo(){
+	public void getInfo(PacketInfo packetInfo){
 		thisLayer[0] = getPort(getBytes(2)); // Source Port
 		thisLayer[1] = getPort(getBytes(2)); // Destination Port
 		if (thisLayer[0].equals("53")){
@@ -17,6 +17,7 @@ public class UDPAnalyzer implements NetworkPacket {
 		}
 		thisLayer[2] = String.valueOf(Integer.parseInt(getBytes(2),16)); // Length
 		thisLayer[3] = String.valueOf(Integer.parseInt(getBytes(2),16)); // Checksum
+		packetInfo.setInfo("UDP", thisLayer);
 	}
 
 	public String getIP(String ip){
@@ -41,6 +42,18 @@ public class UDPAnalyzer implements NetworkPacket {
 		} else {
 			return false;
 		}
+	}
+
+	public boolean isFragmented(){
+		return false;
+	}
+
+	public String getID(){
+		return null;
+	}
+
+	public String[] getFragInfo(){
+		return null;
 	}
 
 	public String formatString(String input, int target){

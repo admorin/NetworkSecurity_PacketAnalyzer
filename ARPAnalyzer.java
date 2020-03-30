@@ -8,7 +8,7 @@ public class ARPAnalyzer implements NetworkPacket{
 		this.packet = packet;
 	}
 
-	public void getInfo(){
+	public void getInfo(PacketInfo packetInfo){
 		thisLayer[0] = getBytes(2); // Hardware Type
 		thisLayer[1] = getBytes(2); // Protocol Type
 		thisLayer[2] = getBytes(1); // Hardware Address Length
@@ -18,12 +18,25 @@ public class ARPAnalyzer implements NetworkPacket{
 		thisLayer[6] = getIP(getBytes(4)); // Sender IP
 		thisLayer[7] = getAddress(getBytes(6)); // Target MAC
 		thisLayer[8] = getIP(getBytes(4)); // Target IP
+		packetInfo.setInfo("ARP", thisLayer);
 	}
 
 	public String getBytes(int amount){
 		String requested = packet.substring(0,(amount*2));
 		packet = packet.substring(amount*2);
 		return requested;
+	}
+
+	public String getID(){
+		return null;
+	}
+
+	public String[] getFragInfo(){
+		return null;
+	}
+
+	public boolean isFragmented(){
+		return false;
 	}
 
 	public String getAddress(String mac){
