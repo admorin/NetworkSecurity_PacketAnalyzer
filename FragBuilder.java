@@ -122,7 +122,7 @@ public class FragBuilder{
 			bi1 = new BigInteger("000" + bihex.charAt(0)).add(new BigInteger(bihex.substring(1,5), 16));
 		}
 		String checksum = bi1.toString(16);
-		System.out.println("Checksum: " + checksum);
+		// System.out.println("Checksum: " + checksum);
 		return checksum;
 
 	}
@@ -131,12 +131,12 @@ public class FragBuilder{
 		if(builtPacket != null){
 			for(int i = 0; i < fragments.size(); i++){
 				String[] thisfrag = fragments.get(i);
-				System.out.println(thisfrag[13]);
+				// System.out.println(thisfrag[13]);
 				int data = (Integer.parseInt(thisfrag[3]) - 20) * 2;
 				int offset = Integer.parseInt(thisfrag[5]) * 8;
 				if(thisfrag[13].length() != data){
-					System.err.println("ERROR: IP Length doesn't equal data!");
-					System.err.println("Length: " + thisfrag[13].length() + " - Data: " + data);
+					// System.err.println("ERROR: IP Length doesn't equal data!");
+					// System.err.println("Length: " + thisfrag[13].length() + " - Data: " + data);
 				} else {
 					for(int j = 0; j < thisfrag[13].length(); j++){
 						if(builtPacket[offset+j] != 'z'){
@@ -153,6 +153,7 @@ public class FragBuilder{
 			
 			if(packetFilled()){
 				packetFinished = true;
+				System.out.println("Packet Finished.");
 				return true;
 			} else {
 				// System.out.println("Still missing pieces!");

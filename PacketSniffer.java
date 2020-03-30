@@ -83,7 +83,6 @@ public class PacketSniffer {
                 hexPacket = readPacketFromFile();
                 // System.out.println(linecount);
                 if (hexPacket == null){
-                    flush(wr);
                     break;
                 }
             }
@@ -93,7 +92,7 @@ public class PacketSniffer {
             analyze.getInfo(packetInfo);
             //Fragmentation ------------------------------------------v
             if (analyze.isFragmented()){
-                System.out.println("Fragmented!");
+                // System.out.println("Fragmented!");
                 synchronized(fragments){
                     // System.out.println("Adding to buffer...");
                     fragments.add(packetInfo);
@@ -103,7 +102,6 @@ public class PacketSniffer {
                 retrieveInfo(analyze);
             }
             if (packetCount == counting){
-                flush(wr);
                 break;
             }
             synchronized(builtPackets){
@@ -117,6 +115,9 @@ public class PacketSniffer {
             }
             readyPackets.clear();
         }
+        // Scanner scan = new Scanner(System.in);
+        // System.out.println("Press enter to continue...");
+        // scan.nextLine();
         System.out.println("Killing Frag Manager...");
         if (fragManager != null){
             fragManager.terminate();
@@ -135,13 +136,13 @@ public class PacketSniffer {
             }
             for(int i = 0; i < readyPackets.size(); i++){
                 if (packetCount == counting){
-                    flush(wr);
                     break;
                 }
                 buildAndAnalyze(readyPackets.get(i));
                 packetCount++;
             }
             readyPackets.clear();
+            flush(wr);
             System.out.println("Sniffer closing...");
         }
     }
@@ -164,7 +165,7 @@ public class PacketSniffer {
                 try{
                     wr.write(prettyInfo);
                 } catch (IOException e){
-                    System.out.println("ERROR: " + e);
+                    System.out.println("ERROR(RI): " + e);
                 }
             }
         }
