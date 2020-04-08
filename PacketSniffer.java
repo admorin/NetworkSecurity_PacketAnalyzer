@@ -90,6 +90,9 @@ public class PacketSniffer {
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
             PacketInfo packetInfo = new PacketInfo();
             analyze.getInfo(packetInfo);
+            if(!analyze.validateChecksum()){
+                continue;
+            }
             //Fragmentation ------------------------------------------v
             if (analyze.isFragmented()){
                 // System.out.println("Fragmented!");
@@ -99,7 +102,8 @@ public class PacketSniffer {
                 }
             } //------------------------------------------------------^
             else {
-                retrieveInfo(analyze);
+                continue;
+                // retrieveInfo(analyze);
             }
             if (packetCount == counting){
                 break;
@@ -149,10 +153,16 @@ public class PacketSniffer {
 
     static void buildAndAnalyze(FragPacket rebuiltPacket){
         System.out.println("Analyzing rebuilt packets...");
+        System.out.println("SID: " + rebuiltPacket.getSID());
         EthernetAnalyzer analyze = new EthernetAnalyzer(rebuiltPacket.getPacket());
         PacketInfo packetInfo = new PacketInfo();
         analyze.getInfo(packetInfo);
         retrieveInfo(analyze);
+        LinkedList<String> fragments = rebuiltPacket.getFragments();
+        System.out.println("FRAGMENTS:");
+        for(int i = 0; i < fragments.size(); i++){
+            System.out.println("\t" + i + ") " + fragments.get(i));
+        }
     }
 
     static void retrieveInfo(EthernetAnalyzer fullPacket){

@@ -1,3 +1,5 @@
+import java.math.BigInteger;
+
 public class ARPAnalyzer implements NetworkPacket{
 
 	String packet = "";
@@ -25,6 +27,10 @@ public class ARPAnalyzer implements NetworkPacket{
 		String requested = packet.substring(0,(amount*2));
 		packet = packet.substring(amount*2);
 		return requested;
+	}
+
+	public boolean validateChecksum(){
+		return true;
 	}
 
 	public String getID(){

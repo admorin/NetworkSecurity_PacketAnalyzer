@@ -1,3 +1,6 @@
+import java.math.BigInteger;
+import java.util.Arrays;
+
 public class IPAnalyzer implements NetworkPacket{
 
 	// Protocols:
@@ -11,6 +14,7 @@ public class IPAnalyzer implements NetworkPacket{
     private NetworkPacket nextPack;
     final String type = "ip";
     private boolean isFragmented = false;
+    private String thisHeader;
 
     public IPAnalyzer(String packet){
     	this.packet = packet;
@@ -22,6 +26,7 @@ public class IPAnalyzer implements NetworkPacket{
 		thisLayer[0] = String.valueOf(versANDihl.charAt(0)); // Version
 		thisLayer[1] = String.valueOf(versANDihl.charAt(1)); // IHL
 		int headerlen = Integer.parseInt(thisLayer[1]);
+		thisHeader = ogPacket.substring(0,headerlen*8);
 		thisLayer[2] = getBytes(1); // DSCP/ECN
 		thisLayer[3] = getBytes(2); // Total Length
 		thisLayer[3] = String.valueOf(Integer.parseInt(thisLayer[3],16));
@@ -139,6 +144,25 @@ public class IPAnalyzer implements NetworkPacket{
 			address = address + " ";
 		}
 		return address;
+	}
+
+	public boolean validateChecksum(){
+		return calcChecksum(thisHeader);
+	}
+
+	private boolean calcChecksum(String headerRaw){
+		String[] header = headerRaw.split("(?<=\\G....)");
+		BigInteger bi1 = new BigInteger(header[0], 16);
+		for(int i = 1; i < header.length; i++){
+			bi1 = bi1.add(new BigInteger(header[i], 16));
+		}
+		String bihex;
+		while(bi1.intValue() > 0xFFFF){
+			bihex = bi1.toString(16);
+			bi1 = new BigInteger("000" + bihex.charAt(0)).add(new BigInteger(bihex.substring(1,5), 16));
+		}
+		String checksum = bi1.toString(16);
+		return checksum.equals("ffff");
 	}
 
 	public String getOptions(int headerlen){

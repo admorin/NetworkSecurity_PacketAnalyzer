@@ -1,12 +1,16 @@
+import java.math.BigInteger;
+
 public class TCPAnalyzer implements NetworkPacket {
 
 	String packet = "";
+	String ogPacket = "";
     private String[] thisLayer = new String[18];
     private int headerlen = 5;
     final String type = "tcp";
 
     public TCPAnalyzer(String packet){
     	this.packet = packet;
+    	this.ogPacket = packet;
     }
 
 	public void getInfo(PacketInfo packetInfo){
@@ -28,9 +32,9 @@ public class TCPAnalyzer implements NetworkPacket {
 		thisLayer[12] = String.valueOf(offsetANDflags.charAt(5)); // RST
 		thisLayer[13] = String.valueOf(offsetANDflags.charAt(6)); // SYN
 		thisLayer[14] = String.valueOf(offsetANDflags.charAt(7)); // FIN
-		thisLayer[15] = getBytes(2);
-		thisLayer[16] = getBytes(2);
-		thisLayer[17] = getBytes(2);
+		thisLayer[15] = getBytes(2); //Window Size
+		thisLayer[16] = getBytes(2); //Checksum
+		thisLayer[17] = getBytes(2); //Urgent Pointer
 		packetInfo.setInfo("TCP", thisLayer);
 	}
 
@@ -41,6 +45,27 @@ public class TCPAnalyzer implements NetworkPacket {
 			return false;
 		}
 	}
+
+	public boolean validateChecksum(){
+		return true;
+	}
+
+    // NOT FULLY IMPLEMENTED
+	private boolean calcChecksum(String headerRaw){
+		String[] header = headerRaw.split("(?<=\\G....)");
+		BigInteger bi1 = new BigInteger(header[0], 16);
+		for(int i = 1; i < header.length; i++){
+			bi1 = bi1.add(new BigInteger(header[i], 16));
+		}
+		String bihex;
+		while(bi1.intValue() > 0xFFFF){
+			bihex = bi1.toString(16);
+			bi1 = new BigInteger("000" + bihex.charAt(0)).add(new BigInteger(bihex.substring(1,5), 16));
+		}
+		String checksum = bi1.toString(16);
+		return checksum.equals("ffff");
+	}
+
 
 	public String getID(){
 		return null;

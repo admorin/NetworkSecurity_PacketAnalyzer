@@ -121,7 +121,9 @@ public class FragBuilder{
 			bihex = bi1.toString(16);
 			bi1 = new BigInteger("000" + bihex.charAt(0)).add(new BigInteger(bihex.substring(1,5), 16));
 		}
-		String checksum = bi1.toString(16);
+		BigInteger mask = BigInteger.ONE.shiftLeft(16).subtract(BigInteger.ONE);
+		// BigInteger bi2 = new BigInteger(Integer.toString(), 16);
+		String checksum = bi1.xor(mask).toString(16);
 		// System.out.println("Checksum: " + checksum);
 		return checksum;
 

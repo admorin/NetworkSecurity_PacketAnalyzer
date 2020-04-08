@@ -41,6 +41,10 @@ public class EthernetAnalyzer implements NetworkPacket{
 		return nextPack.getID();
 	}
 
+	public boolean validateChecksum(){
+		return nextPack.validateChecksum();
+	}
+
 	public boolean isFragmented(){
 		if(nextPack instanceof IPAnalyzer){
 			return nextPack.isFragmented();

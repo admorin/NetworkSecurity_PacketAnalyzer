@@ -5,4 +5,5 @@ public interface NetworkPacket{
 	boolean isFragmented();
 	String getID();
 	String[] getFragInfo();
+	boolean validateChecksum();
 }

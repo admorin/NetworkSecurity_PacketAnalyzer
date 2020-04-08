@@ -1,12 +1,16 @@
+import java.math.BigInteger;
+
 public class UDPAnalyzer implements NetworkPacket {
 
 	String packet = "";
+	String ogPacket = "";
     private String[] thisLayer = new String[4];
     final String type = "udp";
     private boolean dnsFlag = false;
 
     public UDPAnalyzer(String packet){
     	this.packet = packet;
+    	this.ogPacket = packet;
     }
 
 	public void getInfo(PacketInfo packetInfo){
@@ -35,6 +39,27 @@ public class UDPAnalyzer implements NetworkPacket {
 		}
 		return address;
 	}
+
+	public boolean validateChecksum(){
+		return true;
+	}
+
+    // NOT FULLY IMPLEMENTED
+	private boolean calcChecksum(String headerRaw){
+		String[] header = headerRaw.split("(?<=\\G....)");
+		BigInteger bi1 = new BigInteger(header[0], 16);
+		for(int i = 1; i < header.length; i++){
+			bi1 = bi1.add(new BigInteger(header[i], 16));
+		}
+		String bihex;
+		while(bi1.intValue() > 0xFFFF){
+			bihex = bi1.toString(16);
+			bi1 = new BigInteger("000" + bihex.charAt(0)).add(new BigInteger(bihex.substring(1,5), 16));
+		}
+		String checksum = bi1.toString(16);
+		return checksum.equals("ffff");
+	}
+
 
 	public boolean isType(String filter){
 		if(filter.equals(type)){
