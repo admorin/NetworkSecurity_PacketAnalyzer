@@ -21,9 +21,9 @@ public class FragManager implements Runnable{
 
     @Override
     public void run(){
-    	System.out.println("\tFrag Manager Running...");
+    	System.out.println("Frag Manager Running...\n");
     	while(running){
-    		System.out.println("\tChecking for new fragments...");
+    		System.out.println("\tChecking for new fragments...\n");
     		checkBuffer();
     		cleanBuilders();
     		try{
@@ -56,6 +56,7 @@ public class FragManager implements Runnable{
     	String[] fragment = fragInfo.getLayerInfo("IP");
     	for(int i = 0; i < builders.size(); i++){
     		if(builders.get(i).isMatch(fragment)){
+    			// System.out.println("Adding Packet...");
     			if(builders.get(i).addFrag(fragment)){
     				System.out.println("\tBuilt new packet........");
     				synchronized(builtPackets){

@@ -4,7 +4,7 @@ public class UDPAnalyzer implements NetworkPacket {
 
 	String packet = "";
 	String ogPacket = "";
-    private String[] thisLayer = new String[4];
+    private String[] thisLayer = new String[5];
     final String type = "udp";
     private boolean dnsFlag = false;
 
@@ -21,6 +21,7 @@ public class UDPAnalyzer implements NetworkPacket {
 		}
 		thisLayer[2] = String.valueOf(Integer.parseInt(getBytes(2),16)); // Length
 		thisLayer[3] = String.valueOf(Integer.parseInt(getBytes(2),16)); // Checksum
+		thisLayer[4] = packet;
 		packetInfo.setInfo("UDP", thisLayer);
 	}
 

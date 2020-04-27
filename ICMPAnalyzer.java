@@ -4,7 +4,7 @@ public class ICMPAnalyzer implements NetworkPacket {
 	
 	String packet = "";
 	String ogPacket = "";
-    private String[] thisLayer = new String[6];
+    private String[] thisLayer = new String[7];
     final String type = "icmp";
 
     public ICMPAnalyzer(String packet){
@@ -19,6 +19,7 @@ public class ICMPAnalyzer implements NetworkPacket {
 		thisLayer[2] = getBytes(2); // Checksum
 		thisLayer[3] = formatString(typeANDcode[2], 41);
 		thisLayer[4] = formatString(getBytes(4),41); // Rest of Header
+		thisLayer[6] = packet;
 		packetInfo.setInfo("ICMP", thisLayer);
 	}
 

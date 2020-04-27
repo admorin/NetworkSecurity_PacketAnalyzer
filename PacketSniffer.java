@@ -10,11 +10,13 @@ public class PacketSniffer {
     final int loopback = 3;
 
 
+    static BufferedReader idsReader;
     static BufferedReader br;
     static BufferedWriter wr;
     static SimplePacketDriver driver;
     static int linecount = 0;
     static int packetCount = 0;
+    static NetIDS activeIDS;
 
     // CL Flags
     static int counting = -1;
@@ -28,8 +30,10 @@ public class PacketSniffer {
     static String sprt2 = "";
     static String dprt1 = "";
     static String dprt2 = "";
+    static String idsFile = "";
     static boolean andF = false;
     static boolean orF = false;
+    static boolean idsActivate = false;
     private static String[] flags = new String [7];
 
 
@@ -37,6 +41,7 @@ public class PacketSniffer {
     private static LinkedList<FragPacket> builtPackets = new LinkedList<FragPacket>();
     private static LinkedList<FragPacket> readyPackets = new LinkedList<FragPacket>();
     private static FragManager fragManager = new FragManager(fragments, builtPackets);
+    private static LinkedList<Signature> signatures = new LinkedList<Signature>();
 
     // private static HashMap<String, LinkedList> fragmap = new HashMap<String, LinkedList>();
     // private static HashMap<String, Thread> timemap = new HashMap<String, Thread>();
@@ -44,6 +49,9 @@ public class PacketSniffer {
 
     public static void main(String[] args) {
         parseFlags(args);
+        if(idsActivate){
+            activeIDS = new NetIDS(idsReader);
+        }
         flags[0] = filter;
         flags[1] = sadd;
         flags[2] = dadd;
@@ -90,6 +98,10 @@ public class PacketSniffer {
             EthernetAnalyzer analyze = new EthernetAnalyzer(hexPacket);
             PacketInfo packetInfo = new PacketInfo();
             analyze.getInfo(packetInfo);
+            // System.out.println(hexPacket);
+            if(idsActivate){
+                activeIDS.screenPacket(packetInfo);
+            }
             if(!analyze.validateChecksum()){
                 continue;
             }
@@ -115,6 +127,7 @@ public class PacketSniffer {
                 builtPackets.clear();
             }
             for(int i = 0; i < readyPackets.size(); i++){
+                System.out.println("Getting rebuilt packet...");
                 buildAndAnalyze(readyPackets.get(i));
             }
             readyPackets.clear();
@@ -122,7 +135,7 @@ public class PacketSniffer {
         // Scanner scan = new Scanner(System.in);
         // System.out.println("Press enter to continue...");
         // scan.nextLine();
-        System.out.println("Killing Frag Manager...");
+        System.out.println("\nKilling Frag Manager...");
         if (fragManager != null){
             fragManager.terminate();
             try{
@@ -229,6 +242,19 @@ public class PacketSniffer {
     static void parseFlags(String[] args){
         if (args.length > 0){
             System.out.println("\nFLAGS:\n");
+            // ALL POSSIBLE FLAGS:
+            // c - count of packets to capture.
+            // r - read from file.
+            // o - output to file.
+            // t - type to filter.
+            // h - print only headers.
+            // src - print only from IP
+            // dst - print only to IP
+            // sord - print from IPA or to IPB
+            // sandd - print from IPA and to IPB
+            // sport - print from port
+            // dport - print destined for port
+            // ids - activate IDS and use sig file.
             for (int i = 0; i < args.length; i++){
                 String thisFlag = args[i];
                 if (thisFlag.equals("-c")){
@@ -307,7 +333,20 @@ public class PacketSniffer {
                     dprt2 = args[i+2];
                     i += 2;
                     System.out.println("\tFiltering packets directed to port range: " + dprt1 + " - " + dprt2);
-                } else {
+                } else if (thisFlag.equals("-ids")){
+                    idsFile = args[i+1];
+                    idsActivate = true;
+                    System.out.println("\tAttempting to activate IDS with SIGS from: " + idsFile);
+                    i++;
+                    try{
+                        FileReader idsFr=new FileReader(idsFile);    
+                        idsReader=new BufferedReader(idsFr);
+                        System.out.println("\t\tSUCCESS: Reading SIGS from: " + idsFile);
+                    } catch (IOException e){
+                        System.out.println("\t\tERROR: Could not load file. Will not activate IDS.");
+                        idsActivate = false;
+                    }
+                }else {
                     System.out.println("ERROR: Unsure of what this flag is: " + thisFlag);
                 }
             }

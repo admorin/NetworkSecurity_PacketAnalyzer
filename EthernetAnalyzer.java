@@ -8,19 +8,23 @@ public class EthernetAnalyzer implements NetworkPacket{
 
 	boolean valid = false;
 	String packet = "";
+	String ogPacket = "";
 	private PacketInfo packetInfo;
-	private String[] thisLayer = new String[3];
+	private String[] thisLayer = new String[5];
 	private NetworkPacket nextPack;
 	final String type = "eth";
 
 	public EthernetAnalyzer(String packet){
 		this.packet = packet;
+		this.ogPacket = packet;
 	}
 
 	public void getInfo(PacketInfo packetInfo){
 		thisLayer[0] = getAddress(getBytes(6)); //Source MAC
 		thisLayer[1] = getAddress(getBytes(6)); //Dest MAC
 		thisLayer[2] = getBytes(2); //Protocol
+		thisLayer[3] = packet;
+		thisLayer[4] = ogPacket;
 		packetInfo.setInfo("ETH", thisLayer);
 		if (thisLayer[2].equals("0800")){ // IPv4
 			nextPack = new IPAnalyzer(packet);
@@ -49,7 +53,7 @@ public class EthernetAnalyzer implements NetworkPacket{
 		if(nextPack instanceof IPAnalyzer){
 			return nextPack.isFragmented();
 		} else {
-			System.out.println("ERROR: This packet is not an IP packet!");
+			// System.out.println("ERROR: This packet is not an IP packet!");
 			return false;
 		}
 	}
@@ -64,6 +68,10 @@ public class EthernetAnalyzer implements NetworkPacket{
 		} else {
 			return false;
 		}
+	}
+
+	public PacketInfo replyInfo(){
+		return packetInfo;
 	}
 
 	private String getBytes(int amount){

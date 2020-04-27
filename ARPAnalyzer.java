@@ -3,7 +3,7 @@ import java.math.BigInteger;
 public class ARPAnalyzer implements NetworkPacket{
 
 	String packet = "";
-	private String[] thisLayer = new String[9];
+	private String[] thisLayer = new String[10];
 	final String type = "arp";
 
 	public ARPAnalyzer(String packet){
@@ -20,6 +20,7 @@ public class ARPAnalyzer implements NetworkPacket{
 		thisLayer[6] = getIP(getBytes(4)); // Sender IP
 		thisLayer[7] = getAddress(getBytes(6)); // Target MAC
 		thisLayer[8] = getIP(getBytes(4)); // Target IP
+		thisLayer[9] = packet;
 		packetInfo.setInfo("ARP", thisLayer);
 	}
 

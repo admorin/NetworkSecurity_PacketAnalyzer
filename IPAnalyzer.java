@@ -34,7 +34,6 @@ public class IPAnalyzer implements NetworkPacket{
 		thisLayer[5] = getBytes(2); // Offset
 		thisLayer[12] = getFlags(thisLayer[5]); //Flags
 		thisLayer[5] = removeFlags(thisLayer[5]);
-		thisLayer[5] = String.valueOf(Integer.parseInt(thisLayer[5],16));
 		thisLayer[6] = getBytes(1); // Time to Live
 		thisLayer[6] = String.valueOf(Integer.parseInt(thisLayer[6], 16));
 		thisLayer[7] = getProtocol(getBytes(1)); // Protocol
@@ -50,17 +49,16 @@ public class IPAnalyzer implements NetworkPacket{
 		packetInfo.setInfo("IP", thisLayer);
 		if (thisLayer[12].equals("001") || Integer.parseInt(thisLayer[5]) > 0){
 			this.isFragmented = true;
-		} else {
-	        if (thisLayer[7].equals("TCP ")){
-				nextPack = new TCPAnalyzer(packet);
-				nextPack.getInfo(packetInfo);
-			} else if (thisLayer[7].equals("UDP ")){
-				nextPack = new UDPAnalyzer(packet);
-				nextPack.getInfo(packetInfo);
-			} else if (thisLayer[7].equals("ICMP")){
-				nextPack = new ICMPAnalyzer(packet);
-				nextPack.getInfo(packetInfo);
-			}
+		}
+        if (thisLayer[7].equals("TCP ")){
+			nextPack = new TCPAnalyzer(packet);
+			nextPack.getInfo(packetInfo);
+		} else if (thisLayer[7].equals("UDP ")){
+			nextPack = new UDPAnalyzer(packet);
+			nextPack.getInfo(packetInfo);
+		} else if (thisLayer[7].equals("ICMP")){
+			nextPack = new ICMPAnalyzer(packet);
+			nextPack.getInfo(packetInfo);
 		}
 		// thisLayer = {version, ihl, dscpecn, totallength, identification, offset, time2live, protocol, headerCS,
 		//     srcIP, destIP, options};

@@ -4,7 +4,7 @@ public class TCPAnalyzer implements NetworkPacket {
 
 	String packet = "";
 	String ogPacket = "";
-    private String[] thisLayer = new String[18];
+    private String[] thisLayer = new String[19];
     private int headerlen = 5;
     final String type = "tcp";
 
@@ -35,6 +35,7 @@ public class TCPAnalyzer implements NetworkPacket {
 		thisLayer[15] = getBytes(2); //Window Size
 		thisLayer[16] = getBytes(2); //Checksum
 		thisLayer[17] = getBytes(2); //Urgent Pointer
+		thisLayer[18] = packet;
 		packetInfo.setInfo("TCP", thisLayer);
 	}
 

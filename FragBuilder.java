@@ -54,7 +54,7 @@ public class FragBuilder{
 	public boolean addFrag(String[] fragment){
 		fragments.add(fragment);
 		fragStrings.add(fragment[14]);
-		// System.out.println("\t\tFragment Added!");
+		System.out.println("\t\tFragment Added!");
 		if(fragment[12].equals("000")){ // Final Fragment
 			packetSize = 8 * Integer.parseInt(fragment[5]) + fragment[13].length()/2;
 			if(packetSize > 65516){

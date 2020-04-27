@@ -1,0 +1,8 @@
+alert tcp 192.168.1.0/24 any -> 192.168.1.0/24 111 (content:"|000186a5|";msg:"externalmountdaccess";)
+alert tcp any any -> 192.168.1.0/24 any (flags:S;msg:"SYNpacket";)
+alert tcp 129.244.0.0/16 any <> 192.168.1.0/24 23
+alert udp any any -> any any (msg: "DOS Teardrop Attack"; fragbits:M; id:242; logto:"testlog.txt";)
+alert ip 129.244.125.0/24 any -> any any (msg: "Test CIDR Signature!"; logto:"testlog.txt";)
+alert tcp any any -> any any (msg:"DOS Winnuke attack"; flags:U+; logto:"testlog.txt";)
+alert icmp any any -> any any (msg:"DOS Jolt2 attack"; fragoffset:8190; logto:"testlog.txt";)
+alert udp any any -> any any (msg:"DOS JoltUDP attack"; fragoffset:8190; logto:"testlog.txt";)

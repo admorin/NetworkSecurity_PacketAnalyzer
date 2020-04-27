@@ -1,10 +1,13 @@
 ./PacketSniffer.java
+./Signature.java
 ./FragManager.java
 ./FragBuilder.java
+./NetIDS.java
 ./EthernetAnalyzer.java
 ./UDPAnalyzer.java
 ./TCPAnalyzer.java
 ./NetworkPacket.java
+./IDSPacket.java
 ./IPAnalyzer.java
 ./ARPAnalyzer.java
 ./PacketGenerator.java
